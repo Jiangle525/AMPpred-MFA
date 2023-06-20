@@ -1,10 +1,10 @@
 #### Directory Structure
 
 ```
-├── 2. Data set information.ipynb
-├── 3. Attention visualization.ipynb
-├── 3. Feature visualization.ipynb
-├── 3. Ablation experiment.ipynb
+├── Data set information.ipynb
+├── Attention visualization.ipynb
+├── Feature visualization.ipynb
+├── Ablation experiment.ipynb
 ├── AMPpred_MFA
 ├── dataset
 ├── README.md
@@ -29,13 +29,13 @@
   python training_and_testing.py --help
   ```
 
-- `2. Data set information.ipynb`: Analyze dataset information.
+- `Data set information.ipynb`: Analyze dataset information.
 
-- `3. Attention visualization.ipynb`: `UniProt entry` is the attention visualization of `A0A1P8AQ95`, including generating attention matrix heatmap, attention feature sorting, attention network, etc.
+- `Attention visualization.ipynb`: `UniProt entry` is the attention visualization of `A0A1P8AQ95`, including generating attention matrix heatmap, attention feature sorting, attention network, etc.
 
-- `3. Feature visualization.ipynb`: Analyze the feature extraction process of the first 3000 samples in the training set.
+- `Feature visualization.ipynb`: Analyze the feature extraction process of the first 3000 samples in the training set.
 
-- `3. Ablation experiment.ipynb`: Attention ablation experiment and k-mer experiment.
+- `Ablation experiment.ipynb`: Attention ablation experiment and k-mer experiment.
 
 #### Web server
 
