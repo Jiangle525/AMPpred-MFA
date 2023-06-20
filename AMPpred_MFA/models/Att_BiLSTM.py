@@ -6,21 +6,20 @@ from . import MultiAttention
 class Config(BaseConfig):
     def __init__(self):
         super().__init__()
-        # 训练超参数
-        self.learning_rate = 6e-5                       # 学习率
-        self.batch_size = 64                            # 批量大小
-        self.num_epochs = 300                           # 训练次数
-        self.num_patience = 20                          # 早停法忍耐次数
+        # Model hyperparameters
+        self.learning_rate = 6e-5                       # Learning rate
+        self.batch_size = 64                            # Batch size
+        self.num_epochs = 300                           # Training epochs
+        self.num_patience = 20                          # Early Stopping Tolerance Times
 
-        # 模型超参数
-        self.conv_out_channels = 4                      # 卷积层输出通道数
-        self.lstm_input_size = self.embedding_dim       # LSTM输入大小
-        self.lstm_hidden_dim = 32                       # LSTM隐藏层特征数目
-        self.lstm_num_layers = 2                        # LSTM循环次数
-        self.lstm_dropout = 0.5                         # LSTM丢弃率
-        self.lstm_bidirectional = True                  # LSTM是否为双向
-        self.dropout = 0.5                              # 注意力丢弃率
-        self.num_heads = 4                              # 多头注意力的多头数
+        self.conv_out_channels = 4                      # The number of convolutional layer output channels
+        self.lstm_input_size = self.embedding_dim       # LSTM input size
+        self.lstm_hidden_dim = 32                       # Number of LSTM hidden layer features
+        self.lstm_num_layers = 2                        # LSTM cycle times
+        self.lstm_dropout = 0.5                         # LSTM dropout rate
+        self.lstm_bidirectional = True                  # Whether LSTM is bidirectional
+        self.dropout = 0.5                              # Attention dropout rate
+        self.num_heads = 4                              # Numbers of multi head attention head 
 
 
 class Model(nn.Module):
@@ -61,7 +60,7 @@ class Model(nn.Module):
         self.attention_outputs = out
         # out.shape: (batch_size, config.conv_in_channels, config.feature_dim)
         # attention.shape: (batch_size * config.num_heads, config.conv_in_channels, config.conv_in_channels)
-        # 用vocab编码:   out.shape: [64, 100, 60] attention.shape: [256, 100, 100]
+        # vocab encoding:   out.shape: [64, 100, 60] attention.shape: [256, 100, 100]
         out, _ = self.lstm(out)
         out = out.reshape(out.size(0), -1)
         if self.fc:

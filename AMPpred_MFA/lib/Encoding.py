@@ -4,11 +4,10 @@ from . import Vocab
 
 def easy_encoding(dataset, encoding_method, vocab=None, k_mer=1, padding_size=100):
     """dataset.shape: (n, 2), 
-    第一个维度表示序列;
-    第二个维度的第一个元素为fasta的name,
-    第二个维度的第二个元素为fasta的sequence
-    
-    返回一个包含编码的元组
+    The first dimension represents the sequence;
+    The first element of the second dimension is the name of fasta,
+    The second element of the second dimension is the sequence of fasta
+    Returns a tuple containing encoding
     """
     encoding_method = encoding_method.lower()
     if encoding_method == 'dde':

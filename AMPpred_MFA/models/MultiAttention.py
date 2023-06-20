@@ -32,9 +32,9 @@ class Scaled_Dot_Product_Attention(nn.Module):
             Q: [batch_size, len_Q, dim_Q]
             K: [batch_size, len_K, dim_K]
             V: [batch_size, len_V, dim_V]
-            scale: 缩放因子 论文为根号dim_K
+            scale: Scale factor
         Return:
-            self-attention后的张量，以及attention张量
+            Tensors after self attention and attention tensors
         '''
         attention = torch.matmul(Q, K.permute(0, 2, 1))
         if scale:
@@ -72,13 +72,13 @@ class Model(nn.Module):
         V = V.view(batch_size * self.num_head, -1, self.dim_head)
         # if mask:  # TODO
         #     mask = mask.repeat(self.num_head, 1, 1)  # TODO change this
-        scale = K.size(-1) ** -0.5  # 缩放因子
+        scale = K.size(-1) ** -0.5  
         context, attention = self.attention(
             Q, K, V, scale, return_attention=True)
 
         context = context.view(batch_size, -1, self.dim_head * self.num_head)
         out = self.fc(context)
         out = self.dropout(out)
-        out = out + x  # 残差连接
+        out = out + x  # Resnet
         out = self.layer_norm(out)
         return out, attention

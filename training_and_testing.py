@@ -9,7 +9,7 @@ from AMPpred_MFA.lib.Visualization import colorful_print
 
 
 def training_and_testing(trainset_path, testset_path, model_name, feature_method, save_dir, vocab_path=None):
-    """  实例化配置对象、构建词表、生成迭代器  """
+    """  Instantiate configuration objects, build vocabulary, generate iterators """
     feature_method = feature_method.lower()
     if feature_method == 'mixed':
         assert 'amppred_mfa' == model_name.lower(
@@ -46,25 +46,25 @@ def training_and_testing(trainset_path, testset_path, model_name, feature_method
     iter_info(valid_iter)
     print()
 
-    # 模型设置
+    # Model settings
     config.feature_method = feature_method
     if feature_method in ['dde', 'mixed']:
         config.feature_dim = list(train_iter.dataset)[0][0].shape[-1]
-    # list(train_iter.dataset)为列表，可能包含多个特征；
-    # list(train_iter.dataset)[0][0]为第0个特征的X，list(train_iter.dataset)[0][1]为第0个特征的y
+    # list(train_iter.dataset)is a list, which may contain multiple features；
+    # list(train_iter.dataset)[0][0] is X of the 0th feature，list(train_iter.dataset)[0][1] is y of the 0th feature
 
-    """  创建模型  """
+    """  Create model  """
     model = model_file.Model(config)
     # print(model)
     # for x,y in train_iter:
     #     summary(model, x)
     #     break
 
-    """  训练模型、保存训练过程  """
+    """  Train the model and save the training process  """
     model = train(config, model, train_iter, valid_iter, save_dir)
     save_model(model, os.path.join(save_dir, config.save_model))
 
-    """  测试模型  """
+    """  Test model  """
     if testset_path:
         test_dataset = load_dataset(testset_path)
         test_x = easy_encoding(test_dataset, feature_method, vocab,

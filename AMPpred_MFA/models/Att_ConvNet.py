@@ -7,16 +7,15 @@ from . import MultiAttention
 class Config(BaseConfig):
     def __init__(self):
         super().__init__()
-        # 训练超参数
-        self.learning_rate = 6e-5                       # 学习率
-        self.batch_size = 64                            # 批量大小
-        self.num_epochs = 300                           # 训练次数
-        self.num_patience = 20                          # 早停法忍耐次数
+        # Model hyperparameters
+        self.learning_rate = 6e-5                       # Learning rate
+        self.batch_size = 64                            # Batch size
+        self.num_epochs = 300                           # Training epochs
+        self.num_patience = 20                          # Early Stopping Tolerance Times
 
-        # 模型超参数
-        self.conv_in_channels = 1                       # 卷积层输入通道数
-        self.conv_out_channels = 4                      # 卷积层输出通道数
-        self.dropout = 0.5                              # 丢弃率
+        self.conv_in_channels = 1                       # The number of convolutional layer input channels
+        self.conv_out_channels = 4                      # The number of convolutional layer output channels
+        self.dropout = 0.5                              # Dropout rate
         self.num_heads = 4
 
 
@@ -60,7 +59,7 @@ class Model(nn.Module):
         self.attention_outputs = out
         # out.shape: (batch_size, config.conv_in_channels, config.feature_dim)
         # attention.shape: (batch_size * config.num_heads, config.conv_in_channels, config.conv_in_channels)
-        # 用vocab编码:   out.shape: [64, 100, 60] attention.shape: [256, 100, 100]
+        # vocab encoding:   out.shape: [64, 100, 60] attention.shape: [256, 100, 100]
         out = self.conv1(out)
         out = self.bn1(out)
         out = F.relu(out)

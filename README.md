@@ -1,10 +1,10 @@
-目录结构
+**Directory Structure**
 
 ```
-├── 2.1 数据集信息.ipynb
-├── 3.1 注意力可视化.ipynb
-├── 3.2 特征可视化.ipynb
-├── 3.3 消融实验.ipynb
+├── 2. Data set information.ipynb
+├── 3. Attention visualization.ipynb
+├── 3. Feature visualization.ipynb
+├── 3. Ablation experiment.ipynb
 ├── AMPpred_MFA
 ├── dataset
 ├── README.md
@@ -13,11 +13,26 @@
 └── training_and_testing.py
 ```
 
-- `AMPpred_MFA`：Python包，存放`AMPpred-MFA`相关的代码
-- `dataset`：数据集
-- `multiple_training.py`：指定正样本和负样本，构建训练集和测试集进行多次训练
-- `training_and_testing.py`：指定训练集和测试集，单次训练
-- `2.1 数据集信息.ipynb`：分析数据集信息
-- `3.1 注意力可视化.ipynb`：`UniProt entry`为`A0A1P8AQ95`的注意力可视化，包括生成注意力矩阵热图、注意力特征排序、注意力网络等
-- `3.2 特征可视化.ipynb`：分析训练集中前3000个样本的特征提取过程
-- `3.3 消融实验.ipynb`：注意力的消融实验和k-mer实验
+- `AMPpred_MFA`: Python package, storing `AMPpred-MFA` related codes
+
+- `dataset`: All datasets for experiments
+
+- `multiple_training.py`: Specify positive and negative samples, construct training set and test set for multiple training. Use the following command to see how to use it.
+
+  ```shell
+  python multiple_training.py --help
+  ```
+
+- `training_and_testing.py`: Specify training set and test set, single training. Use the following command to see how to use it.
+
+  ```shell
+  python training_and_testing.py --help
+  ```
+
+- `2. Data set information.ipynb`: Analyze dataset information.
+
+- `3. Attention visualization.ipynb`: `UniProt entry` is the attention visualization of `A0A1P8AQ95`, including generating attention matrix heatmap, attention feature sorting, attention network, etc.
+
+- `3. Feature visualization.ipynb`: Analyze the feature extraction process of the first 3000 samples in the training set.
+
+- `3. Ablation experiment.ipynb`: Attention ablation experiment and k-mer experiment.

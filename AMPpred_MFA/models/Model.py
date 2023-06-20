@@ -70,7 +70,7 @@ def evaluate(model, data_iter, device, loss_func=None, test_flag=False):
 
     with torch.no_grad():
         for dataset in data_iter:
-            # dataset为list,前len(dataset)-1个元素为输入, 最后一个元素为输出
+            # The dataset is a list, with the first len (dataset) -1 element as input and the last element as output
             dataset = [dataset[i].to(device) for i in range(len(dataset))]
             outputs = model(dataset[:-1])
             if not test_flag:
@@ -110,10 +110,10 @@ def train(config: BaseConfig, model, train_iter, valid_iter=None, save_dir="./")
     model = model.to(config.device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
     loss_func = torch.nn.CrossEntropyLoss()
-    epoch_iterations = 0  # 记录迭代次数
-    patience_counter = 0  # 忍耐器计数器
-    last_valid_loss = float("inf")  # 验证集上一次损失值
-    num_batchs = len(train_iter)  # 批量数
+    epoch_iterations = 0  # Record the number of iterations
+    patience_counter = 0  # Endurance counter
+    last_valid_loss = float("inf")  # The last loss value of the validation set
+    num_batchs = len(train_iter)  # Batch number
     training_savepath = os.path.join(
         save_dir, config.save_training_log, current_time() + ".jpg")
     evaluation_metrics = {"train loss": [], "valid loss": [],
@@ -123,7 +123,7 @@ def train(config: BaseConfig, model, train_iter, valid_iter=None, save_dir="./")
     evaluation_metrics["train acc"].append(0.5)
     evaluation_metrics["valid acc"].append(0.5)
 
-    # 控制训练输出信息的格式化
+    # Controls formatting of training output messages
     train_log_wait_print = ", ".join(list(filter(None, ["Batch [{}/{}]".format(
         colorful("{:0>3}", "cyan", "default"), colorful("{:0>3}", "cyan", "default"),),
         "train loss: {}".format(
@@ -146,7 +146,7 @@ def train(config: BaseConfig, model, train_iter, valid_iter=None, save_dir="./")
     ]
     )))
 
-    # 迭代训练
+    # Training
     for epoch in range(config.num_epochs):
         print("Epoch [{}/{}]:".format(
             colorful(epoch + 1, "cyan", "default"),
@@ -157,7 +157,7 @@ def train(config: BaseConfig, model, train_iter, valid_iter=None, save_dir="./")
         train_loss_total, train_true_all, train_pred_all = 0, [], []
 
         for batch, dataset in enumerate(train_iter, 1):
-            # dataset为list,前len(dataset)-1个元素为输入, 最后一个元素为输出
+            # dataset is a list, the first len(dataset)-1 element is input, and the last element is output
             dataset = [dataset[i].to(config.device)
                        for i in range(len(dataset))]
             outputs = model(dataset[:-1])
@@ -184,9 +184,9 @@ def train(config: BaseConfig, model, train_iter, valid_iter=None, save_dir="./")
                 batch, num_batchs, train_loss, train_acc, valid_loss, valid_acc), newline=True)
             evaluation_metrics["valid loss"].append(valid_loss)
             evaluation_metrics["valid acc"].append(valid_acc)
-            # 早停法
+            # Early stop method
             if valid_loss < last_valid_loss:
-                patience_counter = 0  # 忍耐器计数器归零
+                patience_counter = 0  # Endurance counter reset to zero
                 last_valid_loss = valid_loss
             else:
                 patience_counter += 1
@@ -272,21 +272,21 @@ def predict(model, data_iter, seqs_iter, device='cpu'):
         for dataset, seqs in zip(data_iter, seqs_iter):
             dataset = [dataset[i].to(device) for i in range(len(dataset))]
             outputs = model(dataset)
-            # 预测标签
+            # Prediction label
             y_pred = torch.max(outputs, 1)[1].cpu().numpy()
             y_pred_all.extend(y_pred)
-            # 预测概率
+            # Prediction Probability
             y_pred_proba = torch.softmax(outputs, 1).cpu().numpy()[:, 1]
             y_pred_proba_all.extend(y_pred_proba)
-            # 获取多个头的注意力
+            # Get the attention of multiple heads
             attention_weights = model.attention_wight2.cpu().detach().numpy()
-            # 平均每个注意力头的权重
+            # Average the weight of each attention head
             seq_length = attention_weights.shape[-1]
             avg_attention_weights = attention_weights.reshape(
                 len(dataset[0]), 4, seq_length, seq_length).mean(axis=1)
-            # 计算每个位置的注意力分数和
+            # Compute the attention score for each location and
             attention_scores = avg_attention_weights.sum(axis=1)
-            # 根据重要位置进行基序推断
+            # Motif inference based on important positions
             pred_motifs = [format_motifs(get_important_regins(
                 score[:len(seqs[i])])) for i, score in enumerate(attention_scores)]
             pred_motifs_all.extend(pred_motifs)
@@ -295,7 +295,7 @@ def predict(model, data_iter, seqs_iter, device='cpu'):
 
 def normalize(values):
     max_val, min_val = max(values), min(values)
-    # 处理特殊情况：所有值都相等
+    # Handling special case: all values are equal
     if min_val == max_val:
         return [1.0] * len(values)
     else:
@@ -311,9 +311,9 @@ def get_important_regins(score):
     threshold = 0.5
     k_extend = 2
     score = normalize(score)
-    # 根据阈值确定每一个位置的重要程度
+    # Determine the importance of each location based on a threshold
     importance = [1 if i > threshold else 0 for i in score]
-    # 对于重要程度不为零的连续区域，记录其起始位置和终止位置
+    # For a continuous region whose importance is not zero, record its start position and end position
     start = -1
     for i in range(len(importance)):
         if importance[i] == 1:
@@ -325,10 +325,10 @@ def get_important_regins(score):
                 start = -1
     if start != -1:
         regions.append((start, len(importance)-1))
-    # 扩展单个重要位置的区域（最后一个除外）
+    # Extend the area of a single important location (except the last one)
     regions_extend = [(t[0], t[1] + k_extend) for t in regions[:-1]]
     regions_extend.append(regions[-1])
-    # 合并重叠的区域
+    # Merge overlapping regions
     for i in range(len(regions_extend)):
         if len(motif) == 0 or motif[-1][1] < regions_extend[i][0]:
             motif.append(regions_extend[i])

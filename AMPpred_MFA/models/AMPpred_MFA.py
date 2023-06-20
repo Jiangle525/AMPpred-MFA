@@ -7,11 +7,11 @@ from . import Att_BiLSTM, Att_ConvNet
 class Config(BaseConfig):
     def __init__(self):
         super().__init__()
-        # 模型超参数
-        self.learning_rate = 6e-5                       # 学习率
-        self.batch_size = 64                            # 批量大小
-        self.num_epochs = 300                           # 训练次数
-        self.num_patience = 20                          # 早停法忍耐次数
+        # Model hyperparameters
+        self.learning_rate = 6e-5                       # Learning rate
+        self.batch_size = 64                            # Batch size
+        self.num_epochs = 300                           # Training epoch
+        self.num_patience = 20                          # Early Stopping Tolerance Times
 
         self.config_manual_feature = Att_ConvNet.Config()
         self.config_manual_feature.num_classes = 1200
@@ -23,10 +23,9 @@ class Config(BaseConfig):
 class Model(nn.Module):
     def __init__(self, config: Config):
         super(Model, self).__init__()
-        # 手工特征设置
+        
         config.config_manual_feature.feature_dim = config.feature_dim
 
-        # 词表特征设置
         config.config_vocab_feature.feature_method = 'vocab'
         config.config_vocab_feature.vocab_size = config.vocab_size
         config.config_vocab_feature.embed_padding_idx = config.embed_padding_idx
