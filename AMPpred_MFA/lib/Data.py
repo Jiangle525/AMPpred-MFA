@@ -40,7 +40,7 @@ def save_fasta_with_flag(lst_fastas, labels, file_path, flag='training'):
                                                  label, flag, fasta[1]) for fasta, label in zip(lst_fastas, labels)]) + '\n')
 
 
-def undersample(pos, neg, undersample_ratio=1):
+def undersample(pos, neg, undersample_ratio=1, shuffle=False):
     choice_num = int(len(pos)*undersample_ratio)
     if choice_num <= len(neg):
         idx = torch.randperm(len(neg))[:choice_num]
@@ -48,6 +48,8 @@ def undersample(pos, neg, undersample_ratio=1):
     dataset = np.r_[pos, neg]
     labels = np.r_[np.ones(len(pos), dtype=int),
                    np.zeros(len(neg), dtype=int)]
+    if shuffle:
+        shuffle_dataset(dataset, labels)
     return dataset, labels
 
 
@@ -62,9 +64,8 @@ def shuffle_dataset(x, y):
 def divide_data_and_save(file_path_pos, file_path_neg, save_path1, save_path2, split_ratio=0):
     data_pos = load_fasta_from_file(file_path_pos)
     data_neg = load_fasta_from_file(file_path_neg)
-    dataset, labels = undersample(data_pos, data_neg)
+    dataset, labels = undersample(data_pos, data_neg, undersample_ratio=1, shuffle=True)
     num_split = int(dataset.shape[0] * split_ratio)
-    shuffle_dataset(dataset, labels)
     save_fasta_with_flag(dataset[num_split:], labels[num_split:],
                          save_path1, 'training')
     if num_split:
@@ -129,11 +130,13 @@ def iter_info(iter_data):
 def result_combination(root_dir, sub_dir):
     df = pd.DataFrame()
     for dir_name in os.listdir(root_dir):
+        if 'data'==dir_name:
+            continue
         if os.path.isdir(os.path.join(root_dir, dir_name)):
             result_dir = os.path.join(root_dir, dir_name, sub_dir)
             for file_name in os.listdir(result_dir):
                 if '.csv' in file_name:
-                    df = df.append(pd.read_csv(
+                    df = df._append(pd.read_csv(
                         os.path.join(result_dir, file_name)))
     df_mean = []
     for col in df:

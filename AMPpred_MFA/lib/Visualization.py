@@ -57,7 +57,7 @@ def draw_metrics(mtrcs):
     return fig
 
 
-def draw_roc(fprs, tprs):
+def draw_roc(fprs, tprs, mean_std_auc=None):
     """_summary_
 
     Args:
@@ -104,8 +104,12 @@ def draw_roc(fprs, tprs):
 
     mean_tpr = np.mean(interp_tprs, axis=0)
     mean_tpr[0], mean_tpr[-1] = 0, 1
-    mean_auc = metrics.auc(mean_fpr, mean_tpr)
-    std_auc = np.std(aucs)
+    if not mean_std_auc:
+        mean_auc = metrics.auc(mean_fpr, mean_tpr)
+        std_auc = np.std(aucs)
+    else:
+        mean_auc = mean_std_auc[0]
+        std_auc = mean_std_auc[1]
 
     fig.plot(mean_fpr,
              mean_tpr,
