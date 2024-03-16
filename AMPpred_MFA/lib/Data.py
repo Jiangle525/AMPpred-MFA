@@ -1,3 +1,4 @@
+import math
 import os
 import torch
 import numpy as np
@@ -21,7 +22,8 @@ def load_fasta_from_str(fastas, sep='\n'):
                     sequence += lines[i].strip()
                     i += 1
                 assert set(sequence).issubset(
-                    standard_aa), 'The sequence must be composed of standard amino acids'
+                    standard_aa
+                ), 'The sequence must be composed of standard amino acids'
                 lst_fastas.append((name, sequence))
             else:
                 i += 1
@@ -36,18 +38,19 @@ def load_fasta_from_file(file_path):
 
 def save_fasta_with_flag(lst_fastas, labels, file_path, flag='training'):
     with open(file_path, 'w', encoding='utf-8') as f:
-        f.write('\n'.join(['{}|{}|{}\n{}'.format(fasta[0],
-                                                 label, flag, fasta[1]) for fasta, label in zip(lst_fastas, labels)]) + '\n')
+        f.write('\n'.join([
+            '{}|{}|{}\n{}'.format(fasta[0], label, flag, fasta[1])
+            for fasta, label in zip(lst_fastas, labels)
+        ]) + '\n')
 
 
 def undersample(pos, neg, undersample_ratio=1, shuffle=False):
-    choice_num = int(len(pos)*undersample_ratio)
+    choice_num = int(len(pos) * undersample_ratio)
     if choice_num <= len(neg):
         idx = torch.randperm(len(neg))[:choice_num]
         neg = np.array([neg[i] for i in idx])
     dataset = np.r_[pos, neg]
-    labels = np.r_[np.ones(len(pos), dtype=int),
-                   np.zeros(len(neg), dtype=int)]
+    labels = np.r_[np.ones(len(pos), dtype=int), np.zeros(len(neg), dtype=int)]
     if shuffle:
         shuffle_dataset(dataset, labels)
     return dataset, labels
@@ -61,13 +64,20 @@ def shuffle_dataset(x, y):
     np.random.shuffle(y)
 
 
-def divide_data_and_save(file_path_pos, file_path_neg, save_path1, save_path2, split_ratio=0):
+def divide_data_and_save(file_path_pos,
+                         file_path_neg,
+                         save_path1,
+                         save_path2,
+                         split_ratio=0):
     data_pos = load_fasta_from_file(file_path_pos)
     data_neg = load_fasta_from_file(file_path_neg)
-    dataset, labels = undersample(data_pos, data_neg, undersample_ratio=1, shuffle=True)
+    dataset, labels = undersample(data_pos,
+                                  data_neg,
+                                  undersample_ratio=1,
+                                  shuffle=True)
     num_split = int(dataset.shape[0] * split_ratio)
-    save_fasta_with_flag(dataset[num_split:], labels[num_split:],
-                         save_path1, 'training')
+    save_fasta_with_flag(dataset[num_split:], labels[num_split:], save_path1,
+                         'training')
     if num_split:
         save_fasta_with_flag(dataset[:num_split], labels[:num_split],
                              save_path2, 'testing')
@@ -77,14 +87,39 @@ def load_dataset(file_path):
     dataset = []
     lst_fastas = load_fasta_from_file(file_path)
     for fasta in lst_fastas:
-        assert '|' in fasta[0], 'Every sequence\'s header must be ">name|label|flag", such as >Proten Name|0|training'
+        assert '|' in fasta[
+            0], 'Every sequence\'s header must be ">name|label|flag", such as >Proten Name|0|training'
         lst_name = fasta[0].split('|')
         # The name can contain multiple '|'
         name = '|'.join(lst_name[:-2])
         label = lst_name[-2]
         dataset.append((name, fasta[1], label))
-
     return np.array(dataset)
+
+
+# 加载正负样本，并构建数据集
+def build_dataset(file_path_pos, file_path_neg, feature_function):
+    test_radio = 0.15
+    pos = load_fasta_from_file(file_path_pos)[:, 1]
+    neg = load_fasta_from_file(file_path_neg)[:, 1]
+    seqs, labels = undersample(pos, neg, shuffle=True)
+    X = feature_function(seqs)
+    num_test = math.floor(len(labels) * test_radio)
+    X_train, y_train = X[:-num_test, :], labels[:-num_test]
+    X_test, y_test = X[-num_test:, :], labels[-num_test:]
+    print("X_train.shape: {}; \ty_train.shape: {}".format(
+        X_train.shape, y_train.shape))
+    print("X_test.shape: {}; \ty_test.shape: {}".format(
+        X_test.shape, y_test.shape))
+    return X_train, y_train, X_test, y_test
+
+
+# 从>name|label|using sequence格式的文件中加载数据集
+def build_dataset_from_format(file_path, feature_function):
+    dataset = load_dataset(file_path)
+    seqs, lables = dataset[:, 1], dataset[:, -1]
+    X, y = feature_function(seqs), lables.astype(int)
+    return X, y
 
 
 def get_dataset_labels(dataset):
@@ -107,21 +142,25 @@ def get_data_iter(tuple_dataset, batch_size=64, shuffle=False, split_ratio=0):
     data_iter = get_data_tensor_loader(tuple_data, batch_size, shuffle=shuffle)
     if num_split:
         tuple_split = (i[:num_split] for i in tuple_dataset)
-        split_iter = get_data_tensor_loader(
-            tuple_split, batch_size, shuffle=shuffle)
+        split_iter = get_data_tensor_loader(tuple_split,
+                                            batch_size,
+                                            shuffle=shuffle)
         return data_iter, split_iter
     return data_iter
 
 
 def iter_info(iter_data):
-    print(colorful('Batch numbers:', 'white', 'bold'), colorful(
-        len(iter_data), 'cyan', 'default'), end=' ' * 4)
+    print(colorful('Batch numbers:', 'white', 'bold'),
+          colorful(len(iter_data), 'cyan', 'default'),
+          end=' ' * 4)
     for lst in iter_data:
         print(colorful('Batch size:', 'white', 'bold'),
               colorful(lst[0].shape[0], 'cyan', 'default'))
         for i in range(len(lst) - 1):
-            print(colorful('X{}.shape:'.format("" if len(lst) == 2 else i+1), 'white', 'bold'), colorful(
-                lst[i].shape, 'cyan', 'default'), end=' ' * 4)
+            print(colorful('X{}.shape:'.format("" if len(lst) == 2 else i + 1),
+                           'white', 'bold'),
+                  colorful(lst[i].shape, 'cyan', 'default'),
+                  end=' ' * 4)
         print(colorful('y.shape:', 'white', 'bold'),
               colorful(lst[-1].shape, 'cyan', 'default'))
         break
@@ -130,24 +169,27 @@ def iter_info(iter_data):
 def result_combination(root_dir, sub_dir):
     df = pd.DataFrame()
     for dir_name in os.listdir(root_dir):
-        if 'data'==dir_name:
+        if 'data' == dir_name:
             continue
         if os.path.isdir(os.path.join(root_dir, dir_name)):
             result_dir = os.path.join(root_dir, dir_name, sub_dir)
             for file_name in os.listdir(result_dir):
                 if '.csv' in file_name:
-                    df = df._append(pd.read_csv(
-                        os.path.join(result_dir, file_name)))
+                    df = df._append(
+                        pd.read_csv(os.path.join(result_dir, file_name)))
     df_mean = []
     for col in df:
         if col == 'CM':
-            df_mean.append(np.array([eval(i) for i in df[col].tolist()]).mean(
-                axis=0).astype(int).tolist())
+            df_mean.append(
+                np.array([eval(i) for i in df[col].tolist()
+                          ]).mean(axis=0).astype(int).tolist())
         else:
-            df_mean.append(str(round(df[col].mean(), 3)) + '±' + 
-                           str(round(df[col].std(), 3)))
-    df.insert(0, 'Trial Number', ['{} th'.format(i+1)
-              for i in range(len(df))], allow_duplicates=False)
-    df.loc[len(df)] = ['Mean']+df_mean
+            df_mean.append(
+                str(round(df[col].mean(), 3)) + '±' +
+                str(round(df[col].std(), 3)))
+    df.insert(0,
+              'Trial Number', ['{} th'.format(i + 1) for i in range(len(df))],
+              allow_duplicates=False)
+    df.loc[len(df)] = ['Mean'] + df_mean
     df.to_csv(os.path.join(root_dir, 'result.csv'), index=False)
     print('result has combinated in:', os.path.join(root_dir, 'result.csv'))

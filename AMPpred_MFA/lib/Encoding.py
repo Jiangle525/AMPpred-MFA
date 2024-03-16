@@ -1,3 +1,4 @@
+from collections import Counter
 import torch
 import numpy as np
 from . import Vocab
@@ -74,3 +75,16 @@ def DDE(seqs):
     return np.array(all_DDE_p)
 
 
+def AAC(sequences):
+    AA = 'ACDEFGHIKLMNPQRSTVWY'
+    all_AAC = []
+    for sequence in sequences:
+        N = len(sequence)
+        count = Counter(sequence)
+        for key in count:
+            count[key] = count[key]/N
+        code = []
+        for aa in AA:
+            code.append(count[aa])
+        all_AAC.append(code)
+    return np.array(all_AAC)

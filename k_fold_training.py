@@ -77,7 +77,7 @@ def k_fold_training(file_path_pos, file_path_neg, model_name, feature_method, k_
     result_combination(result_rootpath, config.save_testing_log)
     fig = draw_roc(*get_rocs(result_rootpath))
     fig.savefig(os.path.join(result_rootpath,'roc.png'), dpi=300)
-    plt.close()
+    plt.close('all')
 
 
 def get_args():
